@@ -1,0 +1,47 @@
+pipeline{
+    agent none
+    environment {
+        DOCKERHUB_CREDENTIALS=credentials('7ae8b9a4-000a-4515-a9f7-4950cbe8696b')
+    }
+    
+    stages{
+        stage('Hello'){
+            agent{ 
+                label 'KMaster'
+            }
+            steps{
+                echo 'Hello World'
+            }
+        }
+        stage('git'){
+            agent{ 
+                label 'KMaster'
+            }
+
+            steps{
+
+                git’https://github.com/ROHIT9417/website.git’
+            }
+        }
+        stage('docker') {
+            agent { 
+                label 'KMaster'
+            }
+
+            steps {
+
+                sh 'sudo docker . -t docker6767/image'
+                sh 'sudo echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                sh 'sudo docker push docker6767/image'
+
+            }
+        }
+        stage('Kubernetes') {
+            agent { 
+                label 'KMaster'
+            }
+
+            steps {
+
+                sh 'kubectl create -f deploy.yml'
+                sh 'kubectl create -f svc.yml'
